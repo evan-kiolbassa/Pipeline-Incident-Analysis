@@ -6,8 +6,14 @@ library(DT)
 navbarPage("Oil Pipeline Incidents 2010-2016", id="main",
            tabPanel("Map", leafletOutput("pimap", height=1000)),
            tabPanel("Pipeline Incidents Summary", 
-                    fluidRow(infoBoxOutput('incidentsum')
-                    )),
+                    fluidRow(infoBoxOutput('incidentsum'),
+                             infoBoxOutput("netloss"),
+                             infoBoxOutput("totalcost")
+                    ),
+                    fluidRow(selectizeInput("cost",
+                                            "Select Cost Variable",
+                                            choices = cost.cat),
+                             plotOutput("boxplots"))),
            tabPanel("Environmental/Community Impact", selectizeInput('selected',
                                                           'Select Impact Factor',
                                                           choices= Env.Cat),

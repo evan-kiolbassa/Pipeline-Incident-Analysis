@@ -43,13 +43,35 @@ function(input, output) {
                                 y = eval(as.symbol(input$selected)))) +
       geom_bar(data = env.comm.impact ,stat = 'identity', 
                aes(x = Accident.Year, y = eval(as.symbol(input$selected)))) +
-      ylab(input$selected)}
+      ylab(input$selected) + ggtitle(input$selected,"by Year")}
   )
   
   output$incidentsum = renderInfoBox({
     sum_incidents <- length(pipeline.df$Report.Number)
-    infoBox("Total Incidents", sum_incidents, icon = icon("newspaper"), 
+    infoBox("Total Incidents:", sum_incidents, icon = icon("newspaper"), 
             fill = TRUE)
   })
   
+  output$netloss = renderInfoBox({
+    sum_netloss <- sum(pipeline.df$Net.Loss.Barrels)
+    infoBox("Net Loss of Barrels:", sum_netloss, icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
+  output$totalcost = renderInfoBox({
+    sum_cost <- sum(pipeline.df$All.Costs) / 1000000
+    infoBox("Total Cost (Millions):", round(sum_cost, 2), icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
+  output$boxplots <- renderPlot({
+    
+    ggplot(pipeline.df, aes(x = Accident.Year, 
+                            y = eval(as.symbol(input$cost)) / 1000000)) +
+      geom_boxplot() + ylab(input$cost) + coord_cartesian(ylim = c(-0.25,0.4)) +
+      ggtitle(input$cost, "in Miilions by Year")
+    
+  })
+ 
+ 
 }

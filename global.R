@@ -54,7 +54,10 @@ all.costs.year <- pipeline.df %>%
 
 all.costs.year
 
+cost.cat <- pipeline.df %>%
+  select(Public.Private.Property.Damage.Costs:All.Costs)
 
+cost.cat <- colnames(cost.cat)
 
 # What is the general trend of costs per yer?
 
