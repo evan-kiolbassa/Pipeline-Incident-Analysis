@@ -37,6 +37,11 @@ pipeline.df$Shutdown.Date.Time <- as.Date(pipeline.df$Shutdown.Date.Time,
                                           "%m/%d/%Y")
 pipeline.df$Restart.Date.Time <- as.Date(pipeline.df$Restart.Date.Time,
                                          "%m/%d/%Y")
+pipeline.df$Accident.Year <- as.character(pipeline.df$Accident.Year)
+
+
+
+
 # 2017 has few data points. Removing 2017
 pipeline.df <- pipeline.df %>%
   filter(Accident.Year != 2017)
@@ -95,13 +100,11 @@ env.comm.impact <- pipeline.df %>%
   select(Accident.Year, All.Injuries, All.Fatalities,
          Public.Private.Property.Damage.Costs, Public.Evacuations,
          Environmental.Remediation.Costs) %>%
-  group_by(Accident.Year) %>%
-  summarise(Fatalities = sum(All.Fatalities, na.rm = T),
-            Injuries = sum(All.Injuries, na.rm = T),
-            Property.Costs = sum(Public.Private.Property.Damage.Costs, na.rm = T),
-            People.Evacuated =  sum(Public.Evacuations, na.rm = T),
-            Environmental.Costs = sum(Environmental.Remediation.Costs,na.rm = T))
+  group_by(Accident.Year) 
 env.comm.impact
+
+Env.Cat <- colnames(env.comm.impact)[-1]
+
 
 # What states are most heavily impacted by pipeline incidents? What is the net
 # loss in barrels per state?

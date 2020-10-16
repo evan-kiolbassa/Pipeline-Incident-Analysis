@@ -15,9 +15,11 @@ library(RColorBrewer)
 require(Hmisc)
 
 function(input, output) {
+  # Generating a color palette based on Cause.Category
   pal <- colorFactor(pal = c("#1b9e77", "#d95f02", "#7570b3"), 
                      domain = unique(pipeline.df$Cause.Category))
-  # create the leaflet map  
+  # creating Interactive Leaflet map visualizing pipeline incidents by
+  # Cause.Category
   output$pimap <- renderLeaflet({
     leaflet(pipeline.df) %>% 
       addCircles(lng = ~Accident.Longitude, lat = ~Accident.Latitude) %>% 
@@ -33,5 +35,15 @@ function(input, output) {
         icon="fa-crosshairs", title="ME",
         onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
   })
+  
+  # Generating a bar chart visualizing environmental/community impact factors
+  # by year
+  output$barchart <- renderPlot({
+    ggplot(env.comm.impact, aes(x = Accident.Year, 
+                                y = eval(as.symbol(input$selected)))) +
+      geom_bar(data = env.comm.impact ,stat = 'identity', 
+               aes(x = Accident.Year, y = eval(as.symbol(input$selected)))) +
+      ylab(input$selected)}
+  )
   
 }
