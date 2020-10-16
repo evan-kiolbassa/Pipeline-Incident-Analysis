@@ -46,4 +46,10 @@ function(input, output) {
       ylab(input$selected)}
   )
   
+  output$incidentsum = renderInfoBox({
+    sum_incidents <- length(pipeline.df$Report.Number)
+    infoBox("Total Incidents", sum_incidents, icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
 }
