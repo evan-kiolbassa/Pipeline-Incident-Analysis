@@ -131,18 +131,22 @@ map.viz.df <- pipeline.df %>%
 usa.map <- map_data("state")
 
 ggplot(data = usa.map, aes(x = long, y = lat)) +
-  geom_polygon(aes(group = group, fill = region),fill = "white", color = "black") +
-  geom_density2d(data = map.viz.df, aes(x = long, y = lat), color = "black") +
+  geom_polygon(aes(group = group, fill = region),fill = "white", 
+               color = "black") +
+  geom_point(data = map.viz.df, aes(x = long, y = lat, 
+                                    size = Net.Loss.Barrels) 
+             ) +
+  #geom_density2d(data = map.viz.df, aes(x = long, y = lat), 
+                 #color = "black") +
   xlab("") +
   ylab("") +
-  theme(legend.position = "none",
-        panel.grid = element_blank(),
+  theme(panel.grid = element_blank(),
         axis.title = element_blank(),
         axis.text = element_blank(),
         axis.ticks.y = element_blank(),
         axis.ticks.x = element_blank(),
         panel.background = element_blank()) +
-  coord_map(xlim = c(-125, -65), ylim = c(20, 52)) + 
+  coord_map(xlim = c(-125, -65), ylim = c(26, 48)) + 
   ggtitle("Two Dimensional Density Plot of Pipeline Incidents") 
 
 # What are the most frequent causes of pipeline incidents?

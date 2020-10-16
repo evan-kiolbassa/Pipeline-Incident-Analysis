@@ -60,18 +60,23 @@ function(input, output) {
   
   output$totalcost = renderInfoBox({
     sum_cost <- sum(pipeline.df$All.Costs) / 1000000
-    infoBox("Total Cost (Millions):", round(sum_cost, 2), icon = icon("newspaper"), 
+    infoBox("Total Cost (Millions):", round(sum_cost, 2), 
+            icon = icon("newspaper"), 
             fill = TRUE)
   })
   
   output$boxplots <- renderPlot({
     
-    ggplot(pipeline.df, aes(x = Accident.Year, 
-                            y = eval(as.symbol(input$cost)) / 1000000)) +
-      geom_boxplot() + ylab(input$cost) + coord_cartesian(ylim = c(-0.25,0.4)) +
-      ggtitle(input$cost, "in Miilions by Year")
+    ggplot(pipeline.df, aes(x = eval(as.symbol(input$cost)) / 1000000)) +
+      geom_freqpoly() + xlab(input$cost) + 
+      coord_cartesian(xlim = c(-0.25, 3)) +
+      ggtitle(input$cost, "in Miilions")
     
   })
- 
+  
+  output$cause.category <- renderPlot({
+    ggplot(pipeline.df, aes(x = Cause.Category)) +
+      geom_bar() + ggtitle("Frequency of Pipeline Incident Causes")
+  })
  
 }

@@ -13,7 +13,10 @@ navbarPage("Oil Pipeline Incidents 2010-2016", id="main",
                     fluidRow(selectizeInput("cost",
                                             "Select Cost Variable",
                                             choices = cost.cat),
-                             plotOutput("boxplots"))),
+                             plotOutput("boxplots")),
+                    fluidRow(plotOutput("cause.category"))
+                    
+                    ),
            tabPanel("Environmental/Community Impact", selectizeInput('selected',
                                                           'Select Impact Factor',
                                                           choices= Env.Cat),
