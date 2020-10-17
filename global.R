@@ -1,5 +1,5 @@
 # Loading libraries
-
+library(shinydashboard)
 library(tidyverse)
 library(maps)
 library(RColorBrewer)
@@ -53,6 +53,14 @@ all.costs.year <- pipeline.df %>%
   summarise(Cost.Year.Millions = sum(All.Costs,na.rm = T)/ 1000000, )
 
 all.costs.year
+
+# Creating a dataframe with no null values in the shut down slots
+shutdown.df <- pipeline.df %>%
+  filter(Pipeline.Shutdown == "YES") %>%
+  mutate(Down.Time = Restart.Date.Time - Shutdown.Date.Time) %>%
+  select(All.Costs, Down.Time) %>%
+  filter(Down.Time > 0) %>%
+  drop_na() 
 
 cost.cat <- pipeline.df %>%
   select(Public.Private.Property.Damage.Costs:All.Costs)

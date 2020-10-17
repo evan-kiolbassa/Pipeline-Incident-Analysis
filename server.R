@@ -6,7 +6,7 @@
 #
 #    http://shiny.rstudio.com/
 #
-
+library(shinydashboard)
 library(DT)
 library(shiny)
 library(leaflet)
@@ -65,18 +65,25 @@ function(input, output) {
             fill = TRUE)
   })
   
-  output$boxplots <- renderPlot({
+  output$avgdown = renderInfoBox({
+    mean_down <- mean(shutdown.df$Down.Time)
+    infoBox("Avg Shutdown Time:", round(mean_down, 2), 
+            icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
+  output$cause_loss <- renderPlot({
     
-    ggplot(pipeline.df, aes(x = eval(as.symbol(input$cost)) / 1000000)) +
-      geom_freqpoly() + xlab(input$cost) + 
-      coord_cartesian(xlim = c(-0.25, 3)) +
-      ggtitle(input$cost, "in Miilions")
+    ggplot(pipeline.df, aes(x = Net.Loss.Barrels, 
+                            y = All.Costs)) +
+      geom_point() + geom_smooth(method = "lm") + scale_x_log10() +
+      scale_y_log10() + ggtitle("Log Scale Scatterplot of All.Costs vs Net Barrels Lost")
     
   })
   
   output$cause.category <- renderPlot({
     ggplot(pipeline.df, aes(x = Cause.Category)) +
-      geom_bar() + ggtitle("Frequency of Pipeline Incident Causes")
+      geom_bar() + ggtitle("Frequency of Pipeline Incident Causes") + coord_flip()
   })
- 
+  
 }
