@@ -58,7 +58,7 @@ all.costs.year
 shutdown.df <- pipeline.df %>%
   filter(Pipeline.Shutdown == "YES") %>%
   mutate(Down.Time = Restart.Date.Time - Shutdown.Date.Time) %>%
-  select(All.Costs, Down.Time) %>%
+  select(All.Costs, Down.Time, Shutdown.Date.Time, Restart.Date.Time) %>%
   filter(Down.Time > 0) %>%
   drop_na() 
 

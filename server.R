@@ -67,7 +67,7 @@ function(input, output) {
   
   output$avgdown = renderInfoBox({
     mean_down <- mean(shutdown.df$Down.Time)
-    infoBox("Avg Shutdown Time:", round(mean_down, 2), 
+    infoBox("Avg Shutdown Time (days):", round(mean_down, 2), 
             icon = icon("newspaper"), 
             fill = TRUE)
   })
