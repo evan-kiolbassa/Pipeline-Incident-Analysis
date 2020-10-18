@@ -80,6 +80,13 @@ function(input, output) {
             fill = TRUE)
   })
   
+  output$number_ops = renderInfoBox({
+    sum_ops <- length(unique(pipeline.df$Operator.Name))
+    infoBox("Number of Operators Affected:", sum_ops, 
+            icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
   output$netlossmap <- renderPlot({
     ggplot(data = usa.map, aes(x = long, y = lat)) +
       geom_polygon(aes(group = group, fill = region),fill = "white", 
@@ -129,4 +136,13 @@ function(input, output) {
       ggtitle("Pie Chart of Top Ten Operators Affected by Pipeline Incidents")
   })
   
+  output$optable = DT::renderDataTable({
+    operator.summary
+  })
+  
+  output$cost_dist <- renderPlot({
+    ggplot(pipeline.df, aes(x = Accident.Year, y = All.Costs / 1000000)) + 
+      geom_boxplot() + coord_cartesian(ylim = c(0,0.5)) + 
+      stat_summary(fun.y= mean, geom="line") + ylab("Cost in Millions (USD)")
+  })
 }

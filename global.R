@@ -101,18 +101,21 @@ top_20_operators <- pipeline.df %>%
   select(Operator.Name) %>%
   head(10)
 
+operator.summary <- pipeline.df %>%
+  group_by(Operator.Name) %>%
+  summarise(Cost.Millions = sum(All.Costs / 1000000), 
+  Down.Time = sum(Restart.Date.Time -
+                  Shutdown.Date.Time, 
+                na.rm = T),
+  Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T)) %>%
+  arrange(desc(Cost.Millions))
+
 # Computing the total costs, total down time,
 # and net loss per year of product for the top 20 operators
 operator.costs.year <- pipeline.df %>%
   subset(pipeline.df$Operator.Name %in% top_20_operators$Operator.Name) %>%
   select(Operator.Name, All.Costs, Accident.Year, Shutdown.Date.Time,
-         Restart.Date.Time, Net.Loss.Barrels) #%>%
-  #group_by(Operator.Name, Accident.Year) %>%
-  #summarise(Cost.Year.Millions = sum(All.Costs / 1000000), 
-   #         Down.Time = sum(Restart.Date.Time -
-    #                        Shutdown.Date.Time, 
-     #                       na.rm = T),
-      #      Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T))
+         Restart.Date.Time, Net.Loss.Barrels) 
 operator.costs.year
 
 # What impact do pipeline incidents have on surrounding communities
