@@ -54,6 +54,19 @@ all.costs.year <- pipeline.df %>%
 
 all.costs.year
 
+# What is the average cost of explosive and ignited incidents
+explosive.costs <- pipeline.df %>%
+  select(Liquid.Explosion, All.Costs) %>%
+  group_by(Liquid.Explosion) %>%
+  summarise(avg = mean(All.Costs))
+# Filtered out explosion observations to get pure average of ignition without
+# explosion cases
+ignition.costs <- pipeline.df %>%
+  filter(Liquid.Explosion == "NO") %>%
+  select(Liquid.Ignition, All.Costs) %>%
+  group_by(Liquid.Ignition) %>%
+  summarise(avg = mean(All.Costs))
+
 # Creating a dataframe with no null values in the shut down slots
 shutdown.df <- pipeline.df %>%
   filter(Pipeline.Shutdown == "YES") %>%
@@ -86,20 +99,20 @@ top_20_operators <- pipeline.df %>%
   summarise(total.cost = sum(All.Costs)) %>%
   arrange(desc(total.cost)) %>%
   select(Operator.Name) %>%
-  head(20)
+  head(10)
 
 # Computing the total costs, total down time,
 # and net loss per year of product for the top 20 operators
 operator.costs.year <- pipeline.df %>%
   subset(pipeline.df$Operator.Name %in% top_20_operators$Operator.Name) %>%
   select(Operator.Name, All.Costs, Accident.Year, Shutdown.Date.Time,
-         Restart.Date.Time, Net.Loss.Barrels) %>%
-  group_by(Operator.Name, Accident.Year) %>%
-  summarise(Cost.Year.Millions = sum(All.Costs / 1000000), 
-            Down.Time = sum(Restart.Date.Time -
-                            Shutdown.Date.Time, 
-                            na.rm = T),
-            Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T))
+         Restart.Date.Time, Net.Loss.Barrels) #%>%
+  #group_by(Operator.Name, Accident.Year) %>%
+  #summarise(Cost.Year.Millions = sum(All.Costs / 1000000), 
+   #         Down.Time = sum(Restart.Date.Time -
+    #                        Shutdown.Date.Time, 
+     #                       na.rm = T),
+      #      Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T))
 operator.costs.year
 
 # What impact do pipeline incidents have on surrounding communities
@@ -142,10 +155,7 @@ ggplot(data = usa.map, aes(x = long, y = lat)) +
   geom_polygon(aes(group = group, fill = region),fill = "white", 
                color = "black") +
   geom_point(data = map.viz.df, aes(x = long, y = lat, 
-                                    size = Net.Loss.Barrels) 
-             ) +
-  #geom_density2d(data = map.viz.df, aes(x = long, y = lat), 
-                 #color = "black") +
+                                    size = Net.Loss.Barrels), color = "red") +
   xlab("") +
   ylab("") +
   theme(panel.grid = element_blank(),
@@ -155,7 +165,7 @@ ggplot(data = usa.map, aes(x = long, y = lat)) +
         axis.ticks.x = element_blank(),
         panel.background = element_blank()) +
   coord_map(xlim = c(-125, -65), ylim = c(26, 48)) + 
-  ggtitle("Two Dimensional Density Plot of Pipeline Incidents") 
+  ggtitle("Net Loss in Barrels in Continental U.S") 
 
 # What are the most frequent causes of pipeline incidents?
 # Summation of causes
@@ -167,15 +177,18 @@ cause.df <- pipeline.df %>%
 cause.df
 
 # It is clear that equipment failure is the number 1 cause of pipeline incidents.
-# Let's calculate the total cost of each cause category
+# Let's calculate the average cost of each cause category
 
 cause.costs <- pipeline.df %>%
   select(Cause.Category,All.Costs) %>%
   group_by(Cause.Category) %>%
-  summarise(Total.Cost = sum(All.Costs)) %>%
-  arrange(desc(Total.Cost))
+  summarise(Avg.Cost = mean(All.Costs)) %>%
+  arrange(desc(Avg.Cost))
 
 cause.costs
+
+
+
 
 
 

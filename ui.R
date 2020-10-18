@@ -10,13 +10,20 @@ navbarPage("Oil Pipeline Incidents 2010-2016", id="main",
                     fluidRow(infoBoxOutput('incidentsum'),
                              infoBoxOutput("netloss"),
                              infoBoxOutput("totalcost"),
-                             infoBoxOutput("avgdown")
-                    ),
+                             infoBoxOutput("avgdown"),
+                             infoBoxOutput("expcount"),
+                             infoBoxOutput("avgcost")),
+                    fluidRow(plotOutput("cost_year")),
                     fluidRow(plotOutput("cause_loss")),
-                    fluidRow(plotOutput("cause.category"))
+                    fluidRow(plotOutput("netlossmap")),
+                    fluidRow(plotOutput("cause.category")),
+                    fluidRow(plotOutput("cause.avg.cost"))
                     
            ),
-           tabPanel("Environmental/Community Impact", selectizeInput('selected',
+           tabPanel("Pipeline Operator Summary", 
+                    fluidRow(plotOutput("operator_pie"))),
+           tabPanel("Environmental/Community Impact", 
+                    selectizeInput('selected',
                                                                      'Select Impact Factor',
                                                                      choices= Env.Cat),
                     

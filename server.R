@@ -1,11 +1,4 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
 library(shinydashboard)
 library(DT)
 library(shiny)
@@ -72,6 +65,39 @@ function(input, output) {
             fill = TRUE)
   })
   
+  output$expcount = renderInfoBox({
+    exp_count <- length(pipeline.df[pipeline.df$Liquid.Explosion == "YES",
+                                 "Liquid.Explosion"])
+    infoBox("Number of Explosion Incidents:", exp_count, 
+            icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
+  output$avgcost = renderInfoBox({
+    avg_cost <- mean(pipeline.df$All.Costs, na.rm = T)
+    infoBox("Average Incident Cost (USD):", round(avg_cost, 2), 
+            icon = icon("newspaper"), 
+            fill = TRUE)
+  })
+  
+  output$netlossmap <- renderPlot({
+    ggplot(data = usa.map, aes(x = long, y = lat)) +
+      geom_polygon(aes(group = group, fill = region),fill = "white", 
+                   color = "black") +
+      geom_point(data = map.viz.df, aes(x = long, y = lat, 
+                                        size = Net.Loss.Barrels), color = "red") +
+      xlab("") +
+      ylab("") +
+      theme(panel.grid = element_blank(),
+            axis.title = element_blank(),
+            axis.text = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            panel.background = element_blank()) +
+      coord_map(xlim = c(-125, -65), ylim = c(26, 48)) + 
+      ggtitle("Net Loss in Barrels in Continental U.S")
+  })
+  
   output$cause_loss <- renderPlot({
     
     ggplot(pipeline.df, aes(x = Net.Loss.Barrels, 
@@ -84,6 +110,23 @@ function(input, output) {
   output$cause.category <- renderPlot({
     ggplot(pipeline.df, aes(x = Cause.Category)) +
       geom_bar() + ggtitle("Frequency of Pipeline Incident Causes") + coord_flip()
+  })
+  
+  output$cost_year <- renderPlot({
+    ggplot(all.costs.year, aes(x = Accident.Year, y = Cost.Year.Millions)) +
+      geom_bar(stat = 'identity')
+  })
+  
+  output$cause.avg.cost <- renderPlot({
+    ggplot(cause.costs, aes(x = Cause.Category, y = Avg.Cost)) +
+      geom_bar(stat = 'identity') + coord_flip()
+  })
+  
+  output$operator_pie <- renderPlot({
+    ggplot(operator.costs.year, aes(x = "",y = All.Costs / 1000000, fill = Operator.Name)) +
+      geom_bar(stat = "identity") + coord_polar("y") + theme_minimal()+
+      theme_void() + scale_fill_brewer(palette = "Paired") + 
+      ggtitle("Pie Chart of Top Ten Operators Affected by Pipeline Incidents")
   })
   
 }
