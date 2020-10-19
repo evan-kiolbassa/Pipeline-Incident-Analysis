@@ -15,10 +15,13 @@ navbarPage("Oil Pipeline Incidents 2010-2016", id="main",
                              infoBoxOutput("avgcost")),
                     fluidRow(plotOutput("cost_year")),
                     fluidRow(plotOutput("cost_dist")),
+                    fluidRow(plotOutput("equip_dist")),
                     fluidRow(plotOutput("cause_loss")),
                     fluidRow(plotOutput("netlossmap")),
                     fluidRow(plotOutput("cause.category")),
-                    fluidRow(plotOutput("cause.avg.cost"))
+                    fluidRow(plotOutput("cause.avg.cost")),
+                    fluidRow(plotOutput("equip.sub")),
+                    fluidRow(plotOutput("corr.sub")),
                     
            ),
            tabPanel("Pipeline Operator Summary",
@@ -30,7 +33,9 @@ navbarPage("Oil Pipeline Incidents 2010-2016", id="main",
                                                                      'Select Impact Factor',
                                                                      choices= Env.Cat),
                     
-                    fluidRow(plotOutput("barchart"), height = 300)))
+                    fluidRow(plotOutput("barchart"), height = 300)),
+           tabPanel("Pipeline Incident Data",
+                    fluidRow(DT::dataTableOutput("pipeline"))))
            
 
 

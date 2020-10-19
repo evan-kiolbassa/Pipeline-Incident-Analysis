@@ -1,4 +1,5 @@
 # Loading libraries
+library(openair)
 library(shinydashboard)
 library(tidyverse)
 library(maps)
@@ -50,7 +51,7 @@ pipeline.df <- pipeline.df %>%
 all.costs.year <- pipeline.df %>%
   select(Accident.Year, All.Costs) %>%
   group_by(Accident.Year) %>%
-  summarise(Cost.Year.Millions = sum(All.Costs,na.rm = T)/ 1000000, )
+  summarise(Cost.Year.Millions = sum(All.Costs,na.rm = T)/ 1e6, )
 
 all.costs.year
 
@@ -93,30 +94,35 @@ length(unique(pipeline.df$Operator.Name))
 # Need to focus on the top 20 operators for visualization aesthetics
 
 # Selecting the top 20 operators by total cost
-top_20_operators <- pipeline.df %>%
-  select(Operator.Name, All.Costs) %>%
+top_10_operators <- pipeline.df %>%
+  filter(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE") %>%
   group_by(Operator.Name) %>%
-  summarise(total.cost = sum(All.Costs)) %>%
-  arrange(desc(total.cost)) %>%
-  select(Operator.Name) %>%
+  summarise(failure.cost = sum(All.Costs)) %>%
+  arrange(desc(failure.cost)) %>%
   head(10)
 
 operator.summary <- pipeline.df %>%
   group_by(Operator.Name) %>%
-  summarise(Cost.Millions = sum(All.Costs / 1000000), 
+  summarise(Cost.Millions = round(sum(All.Costs / 1e6), 2), 
   Down.Time = sum(Restart.Date.Time -
                   Shutdown.Date.Time, 
                 na.rm = T),
-  Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T)) %>%
+  Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T),
+  Total.Equipment.Failure.Incidents = 
+    length(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE")) %>%
   arrange(desc(Cost.Millions))
 
-# Computing the total costs, total down time,
-# and net loss per year of product for the top 20 operators
-operator.costs.year <- pipeline.df %>%
-  subset(pipeline.df$Operator.Name %in% top_20_operators$Operator.Name) %>%
-  select(Operator.Name, All.Costs, Accident.Year, Shutdown.Date.Time,
-         Restart.Date.Time, Net.Loss.Barrels) 
-operator.costs.year
+operator.material.failure <- pipeline.df %>%
+  filter(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE") %>%
+  group_by(Operator.Name) %>%
+  summarise(Equipment.Failure.Costs.Millions = round(sum(All.Costs / 1e6), 2))
+
+operator.summary <- inner_join(operator.summary, operator.material.failure) %>%
+  arrange(desc(Equipment.Failure.Costs.Millions))
+
+top.10.operators <- head(operator.summary, 10)
+  
+
 
 # What impact do pipeline incidents have on surrounding communities
 # and environments per year?
@@ -185,11 +191,20 @@ cause.df
 cause.costs <- pipeline.df %>%
   select(Cause.Category,All.Costs) %>%
   group_by(Cause.Category) %>%
-  summarise(Avg.Cost = mean(All.Costs)) %>%
+  summarise(Avg.Cost = mean(All.Costs / 1e6)) %>%
   arrange(desc(Avg.Cost))
 
 cause.costs
 
+equip.sub <- pipeline.df %>%
+  select(Cause.Category, Cause.Subcategory) %>%
+  filter(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE") %>%
+  select(Cause.Subcategory)
+
+corr.sub <- pipeline.df %>%
+  select(Cause.Category, Cause.Subcategory) %>%
+  filter(Cause.Category == "CORROSION") %>%
+  select(Cause.Subcategory)
 
 
 

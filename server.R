@@ -52,7 +52,7 @@ function(input, output) {
   })
   
   output$totalcost = renderInfoBox({
-    sum_cost <- sum(pipeline.df$All.Costs) / 1000000
+    sum_cost <- sum(pipeline.df$All.Costs) / 1e6
     infoBox("Total Cost (Millions):", round(sum_cost, 2), 
             icon = icon("newspaper"), 
             fill = TRUE)
@@ -121,28 +121,55 @@ function(input, output) {
   
   output$cost_year <- renderPlot({
     ggplot(all.costs.year, aes(x = Accident.Year, y = Cost.Year.Millions)) +
-      geom_bar(stat = 'identity')
+      geom_bar(stat = 'identity') + ggtitle("Total Cost per Year in Millions")
   })
   
   output$cause.avg.cost <- renderPlot({
     ggplot(cause.costs, aes(x = Cause.Category, y = Avg.Cost)) +
-      geom_bar(stat = 'identity') + coord_flip()
+      geom_bar(stat = 'identity') + coord_flip() + 
+      ggtitle("Average Cost of Each Cause Category in Millions")
   })
   
   output$operator_pie <- renderPlot({
-    ggplot(operator.costs.year, aes(x = "",y = All.Costs / 1000000, fill = Operator.Name)) +
+    ggplot(top.10.operators, 
+           aes(x = "",y = Equipment.Failure.Costs.Millions / 1e6, 
+               fill = Operator.Name)) +
       geom_bar(stat = "identity") + coord_polar("y") + theme_minimal()+
       theme_void() + scale_fill_brewer(palette = "Paired") + 
-      ggtitle("Pie Chart of Top Ten Operators Affected by Pipeline Incidents")
+      ggtitle("Pie Chart of Top Ten Operators Affected by Equipment Failure")
   })
   
   output$optable = DT::renderDataTable({
     operator.summary
   })
   
+  output$pipeline = DT::renderDataTable({
+    pipeline.df
+  })
+  
   output$cost_dist <- renderPlot({
-    ggplot(pipeline.df, aes(x = Accident.Year, y = All.Costs / 1000000)) + 
+    ggplot(pipeline.df, aes(x = Accident.Year, y = All.Costs / 1e6)) + 
       geom_boxplot() + coord_cartesian(ylim = c(0,0.5)) + 
-      stat_summary(fun.y= mean, geom="line") + ylab("Cost in Millions (USD)")
+      stat_summary(fun.y= mean, geom="line") + ylab("Cost in Millions (USD)") +
+      ggtitle("Distribution of Incident Costs in Millions")
+  })
+  
+  output$equip_dist <- renderPlot({
+    ggplot(pipeline.df[pipeline.df$Cause.Category == "MATERIAL/WELD/EQUIP FAILURE",
+                       c("All.Costs", "Accident.Year")], 
+           aes(x = Accident.Year, y = All.Costs / 1e6)) + 
+      geom_boxplot() + coord_cartesian(ylim = c(0,0.5)) + 
+      stat_summary(fun.y= mean, geom="line") + ylab("Cost in Millions (USD)") +
+      ggtitle("Distribution of Equipment Failure Costs in Millions")
+  })
+  
+  output$equip.sub <- renderPlot({
+    ggplot(equip.sub, aes(x = Cause.Subcategory)) + geom_bar() + coord_flip() +
+      ggtitle("Equipment Fault Subcategory Summary")
+  })
+  
+  output$corr.sub <- renderPlot({
+    ggplot(corr.sub, aes(x = Cause.Subcategory)) + geom_bar() + coord_flip() +
+      ggtitle("Corrosion Subcategory Summary")
   })
 }
