@@ -38,7 +38,7 @@ function(input, output) {
                aes(x = Accident.Year, y = eval(as.symbol(input$selected)))) +
       ylab(input$selected) + ggtitle(input$selected,"by Year")}
   )
-  
+  # Creating infoboxes
   output$incidentsum = renderInfoBox({
     sum_incidents <- length(pipeline.df$Report.Number)
     infoBox("Total Incidents:", sum_incidents, icon = icon("newspaper"), 
@@ -86,7 +86,8 @@ function(input, output) {
             icon = icon("newspaper"), 
             fill = TRUE)
   })
-  
+  # Generating ggplot map for net loss in barrels visualization
+  usa.map <- map_data("state")
   output$netlossmap <- renderPlot({
     ggplot(data = usa.map, aes(x = long, y = lat)) +
       geom_polygon(aes(group = group, fill = region),fill = "white", 
@@ -104,7 +105,7 @@ function(input, output) {
       coord_map(xlim = c(-125, -65), ylim = c(26, 48)) + 
       ggtitle("Net Loss in Barrels in Continental U.S")
   })
-  
+  # Generating plots
   output$cause_loss <- renderPlot({
     
     ggplot(pipeline.df, aes(x = Net.Loss.Barrels, 

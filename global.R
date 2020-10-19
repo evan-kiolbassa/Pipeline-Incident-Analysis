@@ -20,15 +20,15 @@ colnames(pipeline.df)
 
 # All of the column titles have spaces. Replacing blank spaces with periods
 colnames(pipeline.df) <- str_replace_all(colnames(pipeline.df), " ", ".")
-colnames(pipeline.df)
+
 
 # Removing "/" characters from column names
 colnames(pipeline.df) <- str_replace_all(colnames(pipeline.df), "/", ".")
-colnames(pipeline.df)
+
 
 # Removal of parentheses from column names
 colnames(pipeline.df) <- gsub("[()]", "", colnames(pipeline.df))
-colnames(pipeline.df)
+
 
 # Converting columns containing date information from character objects
 # to date objects
@@ -39,8 +39,6 @@ pipeline.df$Shutdown.Date.Time <- as.Date(pipeline.df$Shutdown.Date.Time,
 pipeline.df$Restart.Date.Time <- as.Date(pipeline.df$Restart.Date.Time,
                                          "%m/%d/%Y")
 pipeline.df$Accident.Year <- as.character(pipeline.df$Accident.Year)
-
-
 
 
 # 2017 has few data points. Removing 2017
@@ -55,18 +53,6 @@ all.costs.year <- pipeline.df %>%
 
 all.costs.year
 
-# What is the average cost of explosive and ignited incidents
-explosive.costs <- pipeline.df %>%
-  select(Liquid.Explosion, All.Costs) %>%
-  group_by(Liquid.Explosion) %>%
-  summarise(avg = mean(All.Costs))
-# Filtered out explosion observations to get pure average of ignition without
-# explosion cases
-ignition.costs <- pipeline.df %>%
-  filter(Liquid.Explosion == "NO") %>%
-  select(Liquid.Ignition, All.Costs) %>%
-  group_by(Liquid.Ignition) %>%
-  summarise(avg = mean(All.Costs))
 
 # Creating a dataframe with no null values in the shut down slots
 shutdown.df <- pipeline.df %>%
@@ -76,24 +62,11 @@ shutdown.df <- pipeline.df %>%
   filter(Down.Time > 0) %>%
   drop_na() 
 
-cost.cat <- pipeline.df %>%
-  select(Public.Private.Property.Damage.Costs:All.Costs)
-
-cost.cat <- colnames(cost.cat)
-
-# What is the general trend of costs per yer?
-
-ggplot(pipeline.df, aes(x = Accident.Date.Time, y = All.Costs)) + 
-  geom_smooth() + ylab("Total Cost in Millions") + xlab("Accident Year") +
-  ggtitle("Pipeline Incident Cost Trend from 2010 to 2016") 
-  
-# What is the total cost per year for each operator?
-length(unique(pipeline.df$Operator.Name))
 
 # There are a total of 229 unique operators in this data set
-# Need to focus on the top 20 operators for visualization aesthetics
+# Need to focus on the top 10 operators for visualization aesthetics
 
-# Selecting the top 20 operators by total cost
+# Selecting the top 10 operators by cost associated with equipment failure
 top_10_operators <- pipeline.df %>%
   filter(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE") %>%
   group_by(Operator.Name) %>%
@@ -101,10 +74,11 @@ top_10_operators <- pipeline.df %>%
   arrange(desc(failure.cost)) %>%
   head(10)
 
+# Creating a data frame summarizing key incident indicators
 operator.summary <- pipeline.df %>%
   group_by(Operator.Name) %>%
   summarise(Cost.Millions = round(sum(All.Costs / 1e6), 2), 
-  Down.Time = sum(Restart.Date.Time -
+  Down.Time.Days = sum(Restart.Date.Time -
                   Shutdown.Date.Time, 
                 na.rm = T),
   Total.Net.Loss.Barrels = sum(Net.Loss.Barrels, na.rm = T),
@@ -112,14 +86,17 @@ operator.summary <- pipeline.df %>%
     length(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE")) %>%
   arrange(desc(Cost.Millions))
 
+# Calculating the cost of equipment failure per operator
 operator.material.failure <- pipeline.df %>%
   filter(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE") %>%
   group_by(Operator.Name) %>%
   summarise(Equipment.Failure.Costs.Millions = round(sum(All.Costs / 1e6), 2))
 
+# Combining the operator.summary and operator.material.failure data frames
 operator.summary <- inner_join(operator.summary, operator.material.failure) %>%
   arrange(desc(Equipment.Failure.Costs.Millions))
 
+# Extracting the top 10 rows for use in pie chart
 top.10.operators <- head(operator.summary, 10)
   
 
@@ -136,45 +113,17 @@ env.comm.impact <- pipeline.df %>%
   group_by(Accident.Year) 
 env.comm.impact
 
+# Extracting column names for selectize input function
 Env.Cat <- colnames(env.comm.impact)[-1]
 
 
-# What states are most heavily impacted by pipeline incidents? What is the net
-# loss in barrels per state?
-incident.states <- pipeline.df %>%
-  select(Accident.State, Net.Loss.Barrels) %>%
-  group_by(Accident.State) %>%
-  summarise(Total.Incidents = sum(length(Accident.State)), 
-            Total.Loss.Barrels = sum(Net.Loss.Barrels)) %>%
-  arrange(desc(Total.Incidents))
-incident.states
-
-# Manipulating data for U.S Density Map Visualization
+# Manipulating data for U.S Barrel Loss Map Visualization
 map.viz.df <- pipeline.df %>%
   select(Net.Loss.Barrels, Accident.Latitude, Accident.Longitude, 
          Pipeline.Location) %>%
   filter(Pipeline.Location == "ONSHORE")
   colnames(map.viz.df) <- c("Net.Loss.Barrels", "lat", "long", 
                             "Pipeline.Location")
-
-
-usa.map <- map_data("state")
-
-ggplot(data = usa.map, aes(x = long, y = lat)) +
-  geom_polygon(aes(group = group, fill = region),fill = "white", 
-               color = "black") +
-  geom_point(data = map.viz.df, aes(x = long, y = lat, 
-                                    size = Net.Loss.Barrels), color = "red") +
-  xlab("") +
-  ylab("") +
-  theme(panel.grid = element_blank(),
-        axis.title = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.ticks.x = element_blank(),
-        panel.background = element_blank()) +
-  coord_map(xlim = c(-125, -65), ylim = c(26, 48)) + 
-  ggtitle("Net Loss in Barrels in Continental U.S") 
 
 # What are the most frequent causes of pipeline incidents?
 # Summation of causes
@@ -196,11 +145,13 @@ cause.costs <- pipeline.df %>%
 
 cause.costs
 
+# Taking a closer look at the subcategory for equipment failure
 equip.sub <- pipeline.df %>%
   select(Cause.Category, Cause.Subcategory) %>%
   filter(Cause.Category == "MATERIAL/WELD/EQUIP FAILURE") %>%
   select(Cause.Subcategory)
 
+# Taking a closer look at the subcategory for corrosion
 corr.sub <- pipeline.df %>%
   select(Cause.Category, Cause.Subcategory) %>%
   filter(Cause.Category == "CORROSION") %>%

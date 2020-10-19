@@ -30,12 +30,12 @@ navbarPage("Oil Pipeline Incidents 2010-2016", id="main",
                     fluidRow(DT::dataTableOutput("optable"))),
            tabPanel("Environmental/Community Impact", 
                     selectizeInput('selected',
-                                                                     'Select Impact Factor',
-                                                                     choices= Env.Cat),
+                    'Select Impact Factor',
+                     choices= Env.Cat),
                     
                     fluidRow(plotOutput("barchart"), height = 300)),
            tabPanel("Pipeline Incident Data",
                     fluidRow(DT::dataTableOutput("pipeline"))))
            
-
+# Github repository https://github.com/evan-kiolbassa/Shiny-Project
 
